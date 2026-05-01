@@ -1,49 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-
-  <title>Dashboard</title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - NilaBot</title>
   <link rel="stylesheet" href="style.css">
-
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
 </head>
-
 <body>
-
-<div class="navbar">
-
-  <h1>HydroSense Dashboard</h1>
-
-  <button onclick="logout()">
-    Logout
-  </button>
-
+<button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay"></div>
+<div class="sidebar">
+  <h1>🐟 NilaBot</h1>
+  <a href="dashboard.html" class="active">📊 Dashboard</a>
+  <a href="kolam.html">🏊 Monitoring Kolam</a>
+  <a href="jadwal.html">📅 Jadwal Pakan</a>
+  <a href="riwayat-pakan.html">📋 Riwayat Pakan</a>
+  <a href="riwayat-sensor.html">📡 Riwayat Sensor</a>
+  <a href="notifikasi.html">🔔 Notifikasi</a>
+  <a href="akun.html">👤 Akun</a>
 </div>
-
-<div class="card-container">
-
-  <div class="card">
-    <h2>Nilai pH</h2>
-    <h1 id="ph">0</h1>
+<div class="header">
+  <span class="header-title">Dashboard</span>
+  <div class="header-right">
+    <span class="header-user" id="hUser"></span>
+    <button class="btn-logout" onclick="showLogoutModal()">⏻ Logout</button>
   </div>
-
-  <div class="card">
-    <h2>Berat</h2>
-    <h1 id="berat">0 g</h1>
+</div>
+<div class="main">
+  <h1>Dashboard Monitoring</h1>
+  <div class="card-container">
+    <div class="card">
+      <h2>Nilai pH</h2>
+      <h1 id="ph">—</h1>
+    </div>
+    <div class="card">
+      <h2>Status Air</h2>
+      <h1 id="status" style="font-size:26px">—</h1>
+    </div>
+    <div class="card">
+      <h2>Berat Pakan</h2>
+      <h1 id="berat">—</h1>
+    </div>
   </div>
-
+  <div class="table-box" style="padding:24px">
+    <canvas id="chart"></canvas>
+  </div>
 </div>
-
-<div class="chart-box">
-  <canvas id="chart"></canvas>
-</div>
-
 <script src="supabase.js"></script>
-<script src="dashboard.js"></script>
+<script src="app.js"></script>
+<script>
+authGuard();
+document.getElementById("hUser").textContent = "👤 " + (localStorage.getItem("username") || "Admin");
 
+async function load() {
+  const { data } = await supabaseClient.from("data_sensor").select("*").order("data_id",{ascending:false}).limit(10);
+  if (!data || !data.length) return;
+  document.getElementById("ph").textContent    = data[0].nilai_ph;
+  document.getElementById("status").textContent = data[0].status_air;
+  document.getElementById("berat").textContent  = data[0].nilai_berat + " g";
+  const labels = data.map(i=>i.waktu).reverse();
+  const phData = data.map(i=>i.nilai_ph).reverse();
+  new Chart(document.getElementById("chart"), {
+    type:"line",
+    data:{ labels, datasets:[{ label:"Nilai pH", data:phData, borderColor:"#0891b2", backgroundColor:"rgba(8,145,178,0.08)", borderWidth:2.5, pointBackgroundColor:"#0e7490", pointRadius:4, tension:0.4, fill:true }] },
+    options:{ responsive:true, plugins:{ legend:{ labels:{ color:"#64748b" } } }, scales:{ x:{ ticks:{color:"#64748b"}, grid:{color:"rgba(8,145,178,0.08)"} }, y:{ ticks:{color:"#64748b"}, grid:{color:"rgba(8,145,178,0.08)"} } } }
+  });
+}
+
+function showLogoutModal() {
+  showModal("Keluar Akun", "Apakah Anda yakin ingin keluar dari akun?", logout);
+}
+
+load();
+</script>
 </body>
 </html>

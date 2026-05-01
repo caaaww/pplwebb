@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monitoring Sensor - NilaBot</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<button class="hamburger" aria-label="Menu">
+  <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay"></div>
+
+<div class="sidebar">
+  <h1>🐟 NilaBot</h1>
+  <a href="dashboard.html">📊 Dashboard</a>
+  <a href="sensor.html" class="active">🌡️ Monitoring Sensor</a>
+  <a href="jadwal.html">📅 Jadwal Pakan</a>
+  <a href="riwayat.html">📋 Riwayat Pakan</a>
+  <a href="notifikasi.html">🔔 Notifikasi</a>
+  <a href="profile.html">👤 Profile</a>
+</div>
+
+<div class="header">
+  <span class="header-title">Monitoring Sensor</span>
+  <div class="header-right">
+    <span class="header-user">👤 Admin</span>
+    <button class="btn-logout" onclick="logout()">⏻ Logout</button>
+  </div>
+</div>
+
+<div class="main">
+  <h1>Riwayat Sensor</h1>
+  <div class="table-box">
+    <table>
+      <thead>
+        <tr>
+          <th>pH</th>
+          <th>Status</th>
+          <th>Berat</th>
+          <th>Waktu</th>
+        </tr>
+      </thead>
+      <tbody id="sensorBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="supabase.js"></script>
+<script src="sensor.js"></script>
+<script>
+(function(){
+  var h=document.querySelector(".hamburger"),s=document.querySelector(".sidebar"),o=document.querySelector(".sidebar-overlay");
+  if(!h)return;
+  h.addEventListener("click",function(){s.classList.toggle("open");o.classList.toggle("active");});
+  o.addEventListener("click",function(){s.classList.remove("open");o.classList.remove("active");});
+  s.querySelectorAll("a").forEach(function(l){l.addEventListener("click",function(){s.classList.remove("open");o.classList.remove("active");});});
+})();
+</script>
+</body>
+</html>

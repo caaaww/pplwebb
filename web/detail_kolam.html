@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Kolam - NilaBot</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay"></div>
+<div class="sidebar">
+  <h1>🐟 NilaBot</h1>
+  <a href="dashboard.html">📊 Dashboard</a>
+  <a href="kolam.html" class="active">🏊 Monitoring Kolam</a>
+  <a href="jadwal.html">📅 Jadwal Pakan</a>
+  <a href="riwayat-pakan.html">📋 Riwayat Pakan</a>
+  <a href="riwayat-sensor.html">📡 Riwayat Sensor</a>
+  <a href="notifikasi.html">🔔 Notifikasi</a>
+  <a href="akun.html">👤 Akun</a>
+</div>
+<div class="header">
+  <span class="header-title" id="headerTitle">Detail Kolam</span>
+  <div class="header-right">
+    <span class="header-user" id="hUser"></span>
+    <button class="btn-logout" onclick="showLogoutModal()">⏻ Logout</button>
+  </div>
+</div>
+<div class="main">
+  <button class="btn-back" onclick="history.back()">‹ Kembali</button>
+  <h1 id="pageTitle">Detail Kolam</h1>
+
+  <!-- Detail info -->
+  <div class="detail-card" id="kolamInfo">
+    <p style="color:var(--text-muted)">Memuat data...</p>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="btn-row" style="margin-bottom:28px">
+    <button class="btn-primary" onclick="window.location.href='kolam-ph.html'">🧪 Data pH</button>
+    <button class="btn-primary" onclick="window.location.href='kolam-kualitas.html'">💧 Kualitas Air</button>
+    <button class="btn-secondary" onclick="bukaUbah()">✏️ Ubah</button>
+  </div>
+</div>
+
+<!-- Modal Ubah -->
+<div class="modal-overlay" id="ubahModal">
+  <div class="modal" style="max-width:460px">
+    <h3>✏️ Ubah Data Kolam</h3>
+    <div class="form-group" style="margin-top:16px">
+      <label>Nama Kolam</label>
+      <input type="text" id="ubahNama" placeholder="Nama kolam">
+    </div>
+    <div class="form-group">
+      <label>Lokasi</label>
+      <input type="text" id="ubahLokasi" placeholder="Lokasi kolam">
+    </div>
+    <div class="form-group">
+      <label>Kapasitas</label>
+      <input type="text" id="ubahKapasitas" placeholder="Kapasitas (contoh: 500 ekor)">
+    </div>
+    <div class="btn-row" style="margin-top:8px; justify-content:flex-end">
+      <button class="btn-secondary" onclick="batalUbah()">Batal</button>
+      <button class="btn-primary" onclick="simpanUbah()">OK</button>
+    </div>
+  </div>
+</div>
+
+<script src="supabase.js"></script>
+<script src="app.js"></script>
+<script>
+authGuard();
+document.getElementById("hUser").textContent = "👤 " + (localStorage.getItem("username") || "Admin");
+
+const kolamId   = localStorage.getItem("kolam_id");
+const kolamNama = localStorage.getItem("kolam_nama");
+let kolamData   = null;
+
+document.getElementById("pageTitle").textContent  = kolamNama || "Detail Kolam";
+document.getElementById("headerTitle").textContent = kolamNama || "Detail Kolam";
+
+async function load() {
+  const { data } = await supabaseClient.from("kolam").select("*").eq("kolam_id", kolamId).single();
+  kolamData = data;
+  if (!data) return;
+  document.getElementById("kolamInfo").innerHTML = `
+    <div class="detail-row"><span class="detail-label">Nama Kolam</span><span class="detail-value">${data.nama_kolam}</span></div>
+    <div class="detail-row"><span class="detail-label">Lokasi</span><span class="detail-value">${data.lokasi || "—"}</span></div>
+    <div class="detail-row"><span class="detail-label">Kapasitas</span><span class="detail-value">${data.kapasitas || "—"}</span></div>
+    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value"><span class="badge badge-success">Aktif</span></span></div>`;
+}
+
+function bukaUbah() {
+  if (!kolamData) return;
+  document.getElementById("ubahNama").value      = kolamData.nama_kolam || "";
+  document.getElementById("ubahLokasi").value    = kolamData.lokasi || "";
+  document.getElementById("ubahKapasitas").value = kolamData.kapasitas || "";
+  document.getElementById("ubahModal").classList.add("active");
+}
+
+function batalUbah() {
+  document.getElementById("ubahModal").classList.remove("active");
+  showToast("Perubahan dibatalkan", "info");
+}
+
+async function simpanUbah() {
+  const nama      = document.getElementById("ubahNama").value.trim();
+  const lokasi    = document.getElementById("ubahLokasi").value.trim();
+  const kapasitas = document.getElementById("ubahKapasitas").value.trim();
+
+  if (!nama || !lokasi || !kapasitas) { showToast("Data tidak boleh kosong", "error"); return; }
+
+  await supabaseClient.from("kolam").update({ nama_kolam: nama, lokasi, kapasitas }).eq("kolam_id", kolamId);
+  document.getElementById("ubahModal").classList.remove("active");
+  showToast("Data kolam berhasil diubah", "success");
+  localStorage.setItem("kolam_nama", nama);
+  document.getElementById("pageTitle").textContent   = nama;
+  document.getElementById("headerTitle").textContent = nama;
+  load();
+}
+
+function showLogoutModal() {
+  showModal("Keluar Akun", "Apakah Anda yakin ingin keluar dari akun?", logout);
+}
+
+load();
+</script>
+</body>
+</html>

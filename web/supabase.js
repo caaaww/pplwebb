@@ -1,5 +1,5 @@
-const SUPABASE_URL = "ISI_URL_KAMU";
-const SUPABASE_KEY = "ISI_ANON_KEY_KAMU";
+const SUPABASE_URL = "https://txxkwiohdfpfwueiqxfm.supabase.co";
+const SUPABASE_KEY = "sb_publishable_ZRynOGWk9VEJG6RfoDLpCA_MFAUe4R4";
 
 const supabaseClient = supabase.createClient(
   SUPABASE_URL,

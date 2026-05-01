@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Riwayat Pakan - NilaBot</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay"></div>
+<div class="sidebar">
+  <h1>🐟 NilaBot</h1>
+  <a href="dashboard.html">📊 Dashboard</a>
+  <a href="kolam.html">🏊 Monitoring Kolam</a>
+  <a href="jadwal.html">📅 Jadwal Pakan</a>
+  <a href="riwayat-pakan.html" class="active">📋 Riwayat Pakan</a>
+  <a href="riwayat-sensor.html">📡 Riwayat Sensor</a>
+  <a href="notifikasi.html">🔔 Notifikasi</a>
+  <a href="akun.html">👤 Akun</a>
+</div>
+<div class="header">
+  <span class="header-title">Detail Riwayat Pakan</span>
+  <div class="header-right">
+    <span class="header-user" id="hUser"></span>
+    <button class="btn-logout" onclick="showLogoutModal()">⏻ Logout</button>
+  </div>
+</div>
+<div class="main">
+  <button class="btn-back" onclick="window.location.href='riwayat-pakan.html'">‹ Kembali</button>
+  <h1>Detail Riwayat Pakan</h1>
+  <div class="detail-card" id="detailBox"><p style="color:var(--text-muted)">Memuat...</p></div>
+</div>
+<script src="supabase.js"></script>
+<script src="app.js"></script>
+<script>
+authGuard();
+document.getElementById("hUser").textContent = "👤 " + (localStorage.getItem("username") || "Admin");
+const riwayatId = localStorage.getItem("riwayat_pakan_id");
+
+async function load() {
+  const { data } = await supabaseClient.from("riwayat_pakan")
+    .select("*").eq("riwayat_id", riwayatId).single();
+  if (!data) return;
+  const badgeClass = data.status_eksekusi === "Berhasil" ? "badge-success" : data.status_eksekusi === "Gagal" ? "badge-danger" : "badge-warning";
+  document.getElementById("detailBox").innerHTML = `
+    <div class="detail-row"><span class="detail-label">Waktu Eksekusi</span><span class="detail-value">${data.waktu_eksekusi}</span></div>
+    <div class="detail-row"><span class="detail-label">Jumlah Pakan</span><span class="detail-value">${data.jumlah_pakan} g</span></div>
+    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value"><span class="badge ${badgeClass}">${data.status_eksekusi}</span></span></div>
+    ${data.keterangan ? `<div class="detail-row"><span class="detail-label">Keterangan</span><span class="detail-value">${data.keterangan}</span></div>` : ""}`;
+}
+
+function showLogoutModal() {
+  showModal("Keluar Akun", "Apakah Anda yakin ingin keluar dari akun?", logout);
+}
+
+load();
+</script>
+</body>
+</html>

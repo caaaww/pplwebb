@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ubah Jadwal - NilaBot</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay"></div>
+<div class="sidebar">
+  <h1>🐟 NilaBot</h1>
+  <a href="dashboard.html">📊 Dashboard</a>
+  <a href="kolam.html">🏊 Monitoring Kolam</a>
+  <a href="jadwal.html" class="active">📅 Jadwal Pakan</a>
+  <a href="riwayat-pakan.html">📋 Riwayat Pakan</a>
+  <a href="riwayat-sensor.html">📡 Riwayat Sensor</a>
+  <a href="notifikasi.html">🔔 Notifikasi</a>
+  <a href="akun.html">👤 Akun</a>
+</div>
+<div class="header">
+  <span class="header-title">Ubah Jadwal Pakan</span>
+  <div class="header-right">
+    <span class="header-user" id="hUser"></span>
+    <button class="btn-logout" onclick="showLogoutModal()">⏻ Logout</button>
+  </div>
+</div>
+<div class="main">
+  <button class="btn-back" onclick="batal()">‹ Kembali</button>
+  <h1>Ubah Jadwal Pakan</h1>
+  <div class="form-card">
+    <div class="form-group">
+      <label>Kolam</label>
+      <select id="fKolam"><option value="">-- Pilih Kolam --</option></select>
+    </div>
+    <div class="form-group">
+      <label>Waktu Pakan</label>
+      <input type="time" id="fWaktu">
+    </div>
+    <div class="form-group">
+      <label>Jumlah Pakan (g)</label>
+      <input type="number" id="fJumlah" placeholder="Contoh: 500">
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="fStatus">
+        <option value="">-- Pilih Status --</option>
+        <option value="Aktif">Aktif</option>
+        <option value="Nonaktif">Nonaktif</option>
+      </select>
+    </div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn-secondary" onclick="batal()">Batal</button>
+      <button class="btn-primary" onclick="simpan()">OK</button>
+    </div>
+  </div>
+</div>
+<script src="supabase.js"></script>
+<script src="app.js"></script>
+<script>
+authGuard();
+document.getElementById("hUser").textContent = "👤 " + (localStorage.getItem("username") || "Admin");
+const jadwalId = localStorage.getItem("jadwal_id");
+
+async function loadKolam(selectedId) {
+  const { data } = await supabaseClient.from("kolam").select("*").order("kolam_id");
+  const sel = document.getElementById("fKolam");
+  if (data) data.forEach(k => {
+    const opt = document.createElement("option");
+    opt.value = k.kolam_id;
+    opt.textContent = k.nama_kolam;
+    if (k.kolam_id == selectedId) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+async function loadData() {
+  const { data } = await supabaseClient.from("jadwal_pakan").select("*").eq("jadwal_id", jadwalId).single();
+  if (!data) return;
+  await loadKolam(data.kolam_id);
+  document.getElementById("fWaktu").value  = data.waktu_pakan || "";
+  document.getElementById("fJumlah").value = data.jumlah_pakan || "";
+  document.getElementById("fStatus").value = data.status || "";
+}
+
+function batal() {
+  showToast("Perubahan dibatalkan", "info");
+  setTimeout(() => window.location.href = "jadwal-detail.html", 1200);
+}
+
+async function simpan() {
+  const kolam  = document.getElementById("fKolam").value;
+  const waktu  = document.getElementById("fWaktu").value;
+  const jumlah = document.getElementById("fJumlah").value;
+  const status = document.getElementById("fStatus").value;
+
+  if (!kolam || !waktu || !jumlah || !status) {
+    showToast("Data tidak boleh kosong", "error"); return;
+  }
+
+  const { error } = await supabaseClient.from("jadwal_pakan")
+    .update({ kolam_id: kolam, waktu_pakan: waktu, jumlah_pakan: jumlah, status })
+    .eq("jadwal_id", jadwalId);
+
+  if (error) { showToast("Gagal menyimpan: " + error.message, "error"); return; }
+  showToast("Jadwal berhasil diubah", "success");
+  setTimeout(() => window.location.href = "jadwal.html", 1400);
+}
+
+function showLogoutModal() {
+  showModal("Keluar Akun", "Apakah Anda yakin ingin keluar dari akun?", logout);
+}
+
+loadData();
+</script>
+</body>
+</html>

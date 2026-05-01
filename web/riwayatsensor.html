@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riwayat Sensor - NilaBot</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay"></div>
+<div class="sidebar">
+  <h1>🐟 NilaBot</h1>
+  <a href="dashboard.html">📊 Dashboard</a>
+  <a href="kolam.html">🏊 Monitoring Kolam</a>
+  <a href="jadwal.html">📅 Jadwal Pakan</a>
+  <a href="riwayat-pakan.html">📋 Riwayat Pakan</a>
+  <a href="riwayat-sensor.html" class="active">📡 Riwayat Sensor</a>
+  <a href="notifikasi.html">🔔 Notifikasi</a>
+  <a href="akun.html">👤 Akun</a>
+</div>
+<div class="header">
+  <span class="header-title">Riwayat Sensor</span>
+  <div class="header-right">
+    <span class="header-user" id="hUser"></span>
+    <button class="btn-logout" onclick="showLogoutModal()">⏻ Logout</button>
+  </div>
+</div>
+<div class="main">
+  <h1>Riwayat Sensor</h1>
+  <p style="color:var(--text-muted);margin-bottom:20px;font-size:14px">Pilih kolam untuk melihat riwayat sensor</p>
+  <div id="kolamList"><p style="color:var(--text-muted)">Memuat data kolam...</p></div>
+</div>
+<script src="supabase.js"></script>
+<script src="app.js"></script>
+<script>
+authGuard();
+document.getElementById("hUser").textContent = "👤 " + (localStorage.getItem("username") || "Admin");
+
+async function load() {
+  const { data } = await supabaseClient.from("kolam").select("*").order("kolam_id");
+  const box = document.getElementById("kolamList");
+  if (!data || !data.length) { box.innerHTML = '<p style="color:var(--text-muted)">Tidak ada data kolam.</p>'; return; }
+  box.innerHTML = data.map(k => `
+    <div class="list-card" onclick="bukaRiwayat(${k.kolam_id}, '${k.nama_kolam}')">
+      <div>
+        <div class="list-card-title">📡 ${k.nama_kolam}</div>
+        <div class="list-card-sub">${k.lokasi || "—"}</div>
+      </div>
+      <span class="list-card-arrow">›</span>
+    </div>`).join("");
+}
+
+function bukaRiwayat(id, nama) {
+  localStorage.setItem("sensor_kolam_id", id);
+  localStorage.setItem("sensor_kolam_nama", nama);
+  window.location.href = "riwayat-sensor-detail.html";
+}
+
+function showLogoutModal() {
+  showModal("Keluar Akun", "Apakah Anda yakin ingin keluar dari akun?", logout);
+}
+
+load();
+</script>
+</body>
+</html>

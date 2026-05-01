@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kualitas Air - NilaBot</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay"></div>
+<div class="sidebar">
+  <h1>🐟 NilaBot</h1>
+  <a href="dashboard.html">📊 Dashboard</a>
+  <a href="kolam.html" class="active">🏊 Monitoring Kolam</a>
+  <a href="jadwal.html">📅 Jadwal Pakan</a>
+  <a href="riwayat-pakan.html">📋 Riwayat Pakan</a>
+  <a href="riwayat-sensor.html">📡 Riwayat Sensor</a>
+  <a href="notifikasi.html">🔔 Notifikasi</a>
+  <a href="akun.html">👤 Akun</a>
+</div>
+<div class="header">
+  <span class="header-title" id="headerTitle">Kualitas Air</span>
+  <div class="header-right">
+    <span class="header-user" id="hUser"></span>
+    <button class="btn-logout" onclick="showLogoutModal()">⏻ Logout</button>
+  </div>
+</div>
+<div class="main">
+  <button class="btn-back" onclick="history.back()">‹ Kembali</button>
+  <h1 id="pageTitle">Kualitas Air</h1>
+  <div class="table-box">
+    <table>
+      <thead><tr><th>No</th><th>pH</th><th>Status Air</th><th>Berat</th><th>Waktu</th></tr></thead>
+      <tbody id="kualitasBody"></tbody>
+    </table>
+  </div>
+</div>
+<script src="supabase.js"></script>
+<script src="app.js"></script>
+<script>
+authGuard();
+document.getElementById("hUser").textContent = "👤 " + (localStorage.getItem("username") || "Admin");
+const kolamNama = localStorage.getItem("kolam_nama") || "Kolam";
+const kolamId   = localStorage.getItem("kolam_id");
+document.getElementById("pageTitle").textContent   = "💧 Kualitas Air - " + kolamNama;
+document.getElementById("headerTitle").textContent = "Kualitas Air - " + kolamNama;
+
+async function load() {
+  const { data } = await supabaseClient.from("data_sensor")
+    .select("*").eq("kolam_id", kolamId).order("data_id",{ascending:false});
+  const tbody = document.getElementById("kualitasBody");
+  if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Tidak ada data</td></tr>'; return; }
+  tbody.innerHTML = data.map((r, i) => {
+    const badgeClass = r.status_air === "Normal" ? "badge-success" : r.status_air === "Bahaya" ? "badge-danger" : "badge-warning";
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${r.nilai_ph}</td>
+      <td><span class="badge ${badgeClass}">${r.status_air}</span></td>
+      <td>${r.nilai_berat} g</td>
+      <td>${r.waktu}</td>
+    </tr>`;
+  }).join("");
+}
+
+function showLogoutModal() {
+  showModal("Keluar Akun", "Apakah Anda yakin ingin keluar dari akun?", logout);
+}
+
+load();
+</script>
+</body>
+</html>

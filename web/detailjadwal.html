@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Jadwal - NilaBot</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay"></div>
+<div class="sidebar">
+  <h1>🐟 NilaBot</h1>
+  <a href="dashboard.html">📊 Dashboard</a>
+  <a href="kolam.html">🏊 Monitoring Kolam</a>
+  <a href="jadwal.html" class="active">📅 Jadwal Pakan</a>
+  <a href="riwayat-pakan.html">📋 Riwayat Pakan</a>
+  <a href="riwayat-sensor.html">📡 Riwayat Sensor</a>
+  <a href="notifikasi.html">🔔 Notifikasi</a>
+  <a href="akun.html">👤 Akun</a>
+</div>
+<div class="header">
+  <span class="header-title">Detail Jadwal</span>
+  <div class="header-right">
+    <span class="header-user" id="hUser"></span>
+    <button class="btn-logout" onclick="showLogoutModal()">⏻ Logout</button>
+  </div>
+</div>
+<div class="main">
+  <button class="btn-back" onclick="window.location.href='jadwal.html'">‹ Kembali</button>
+  <h1>Detail Jadwal Pakan</h1>
+  <div class="detail-card" id="detailBox"><p style="color:var(--text-muted)">Memuat...</p></div>
+  <div class="btn-row">
+    <button class="btn-danger" onclick="konfirmasiHapus()">🗑️ Hapus</button>
+    <button class="btn-secondary" onclick="window.location.href='jadwal-ubah.html'">✏️ Ubah</button>
+  </div>
+</div>
+
+<script src="supabase.js"></script>
+<script src="app.js"></script>
+<script>
+authGuard();
+document.getElementById("hUser").textContent = "👤 " + (localStorage.getItem("username") || "Admin");
+const jadwalId = localStorage.getItem("jadwal_id");
+let dataJadwal = null;
+
+async function load() {
+  const { data } = await supabaseClient.from("jadwal_pakan")
+    .select("*, kolam(nama_kolam)").eq("jadwal_id", jadwalId).single();
+  dataJadwal = data;
+  if (!data) return;
+  const badgeClass = data.status === "Aktif" ? "badge-success" : "badge-warning";
+  document.getElementById("detailBox").innerHTML = `
+    <div class="detail-row"><span class="detail-label">Kolam</span><span class="detail-value">${data.kolam?.nama_kolam || "Kolam " + data.kolam_id}</span></div>
+    <div class="detail-row"><span class="detail-label">Waktu Pakan</span><span class="detail-value">${data.waktu_pakan}</span></div>
+    <div class="detail-row"><span class="detail-label">Jumlah Pakan</span><span class="detail-value">${data.jumlah_pakan} g</span></div>
+    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value"><span class="badge ${badgeClass}">${data.status}</span></span></div>`;
+}
+
+function konfirmasiHapus() {
+  showModal(
+    "Hapus Jadwal",
+    "Apakah Anda yakin akan menghapus jadwal ini?",
+    async () => {
+      // Soft delete: ubah status jadi Nonaktif
+      await supabaseClient.from("jadwal_pakan")
+        .update({ status: "Nonaktif" }).eq("jadwal_id", jadwalId);
+      showToast("Jadwal telah terhapus", "success");
+      setTimeout(() => window.location.href = "jadwal.html", 1400);
+    },
+    () => {
+      showToast("Perubahan dibatalkan", "info");
+    }
+  );
+}
+
+function showLogoutModal() {
+  showModal("Keluar Akun", "Apakah Anda yakin ingin keluar dari akun?", logout);
+}
+
+load();
+</script>
+</body>
+</html>

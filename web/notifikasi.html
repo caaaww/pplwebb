@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifikasi - NilaBot</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay"></div>
+<div class="sidebar">
+  <h1>🐟 NilaBot</h1>
+  <a href="dashboard.html">📊 Dashboard</a>
+  <a href="kolam.html">🏊 Monitoring Kolam</a>
+  <a href="jadwal.html">📅 Jadwal Pakan</a>
+  <a href="riwayat-pakan.html">📋 Riwayat Pakan</a>
+  <a href="riwayat-sensor.html">📡 Riwayat Sensor</a>
+  <a href="notifikasi.html" class="active">🔔 Notifikasi</a>
+  <a href="akun.html">👤 Akun</a>
+</div>
+<div class="header">
+  <span class="header-title">Notifikasi</span>
+  <div class="header-right">
+    <span class="header-user" id="hUser"></span>
+    <button class="btn-logout" onclick="showLogoutModal()">⏻ Logout</button>
+  </div>
+</div>
+<div class="main">
+  <h1>Notifikasi</h1>
+  <div id="notifBox"><p style="color:var(--text-muted)">Memuat notifikasi...</p></div>
+</div>
+<script src="supabase.js"></script>
+<script src="app.js"></script>
+<script>
+authGuard();
+document.getElementById("hUser").textContent = "👤 " + (localStorage.getItem("username") || "Admin");
+
+async function load() {
+  const { data } = await supabaseClient.from("notifikasi")
+    .select("*").order("notifikasi_id",{ascending:false});
+  const box = document.getElementById("notifBox");
+  if (!data || !data.length) { box.innerHTML = '<p style="color:var(--text-muted)">Tidak ada notifikasi.</p>'; return; }
+  box.innerHTML = data.map(n => `
+    <div class="card" style="margin-bottom:14px;padding:18px 22px;border-left:4px solid var(--teal)">
+      <h3 style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:6px">${n.pesan}</h3>
+      <p style="font-size:13px;color:var(--text-muted)">${n.waktu}</p>
+    </div>`).join("");
+}
+
+function showLogoutModal() {
+  showModal("Keluar Akun", "Apakah Anda yakin ingin keluar dari akun?", logout);
+}
+
+load();
+</script>
+</body>
+</html>

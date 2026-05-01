@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riwayat Pakan - NilaBot</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="sidebar-overlay"></div>
+<div class="sidebar">
+  <h1>🐟 NilaBot</h1>
+  <a href="dashboard.html">📊 Dashboard</a>
+  <a href="kolam.html">🏊 Monitoring Kolam</a>
+  <a href="jadwal.html">📅 Jadwal Pakan</a>
+  <a href="riwayat-pakan.html" class="active">📋 Riwayat Pakan</a>
+  <a href="riwayat-sensor.html">📡 Riwayat Sensor</a>
+  <a href="notifikasi.html">🔔 Notifikasi</a>
+  <a href="akun.html">👤 Akun</a>
+</div>
+<div class="header">
+  <span class="header-title">Riwayat Pakan</span>
+  <div class="header-right">
+    <span class="header-user" id="hUser"></span>
+    <button class="btn-logout" onclick="showLogoutModal()">⏻ Logout</button>
+  </div>
+</div>
+<div class="main">
+  <h1>Riwayat Pakan</h1>
+  <div id="riwayatList"><p style="color:var(--text-muted)">Memuat data...</p></div>
+</div>
+<script src="supabase.js"></script>
+<script src="app.js"></script>
+<script>
+authGuard();
+document.getElementById("hUser").textContent = "👤 " + (localStorage.getItem("username") || "Admin");
+
+async function load() {
+  const { data } = await supabaseClient.from("riwayat_pakan")
+    .select("*").order("riwayat_id",{ascending:false});
+  const box = document.getElementById("riwayatList");
+  if (!data || !data.length) { box.innerHTML = '<p style="color:var(--text-muted)">Belum ada riwayat.</p>'; return; }
+  box.innerHTML = data.map(r => {
+    const badgeClass = r.status_eksekusi === "Berhasil" ? "badge-success" : r.status_eksekusi === "Gagal" ? "badge-danger" : "badge-warning";
+    return `
+    <div class="list-card" onclick="bukaDetail(${r.riwayat_id})">
+      <div>
+        <div class="list-card-title">📋 ${r.waktu_eksekusi}</div>
+        <div class="list-card-sub">Jumlah: ${r.jumlah_pakan} g &nbsp;|&nbsp; <span class="badge ${badgeClass}">${r.status_eksekusi}</span></div>
+      </div>
+      <span class="list-card-arrow">›</span>
+    </div>`;
+  }).join("");
+}
+
+function bukaDetail(id) {
+  localStorage.setItem("riwayat_pakan_id", id);
+  window.location.href = "riwayat-pakan-detail.html";
+}
+
+function showLogoutModal() {
+  showModal("Keluar Akun", "Apakah Anda yakin ingin keluar dari akun?", logout);
+}
+
+load();
+</script>
+</body>
+</html>

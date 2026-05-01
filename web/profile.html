@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profile - NilaBot</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div class="sidebar">
+  <h1>🐟 NilaBot</h1>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="sensor.html">Monitoring Sensor</a>
+  <a href="jadwal.html">Jadwal Pakan</a>
+  <a href="riwayat.html">Riwayat Pakan</a>
+  <a href="notifikasi.html">Notifikasi</a>
+  <a href="profile.html" class="active">👤 Profile</a>
+</div>
+
+<div class="header">
+  <span class="header-title">Profile</span>
+  <div class="header-right">
+    <span class="header-user">👤 Admin</span>
+    <button class="btn-logout" onclick="logout()">⏻ Logout</button>
+  </div>
+</div>
+
+<div class="main">
+  <h1>Profile</h1>
+
+  <div class="card" style="max-width:420px">
+    <div style="display:flex; align-items:center; gap:20px; margin-bottom:24px;">
+      <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0d9488,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:28px;">👤</div>
+      <div>
+        <h2 style="font-size:20px;color:var(--text-primary);margin-bottom:4px;">Admin</h2>
+        <span class="badge badge-success">Administrator</span>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:20px;display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--text-muted);font-size:14px;">Username</span>
+        <span style="color:var(--text-primary);font-size:14px;font-weight:500;">admin</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--text-muted);font-size:14px;">Role</span>
+        <span style="color:var(--text-primary);font-size:14px;font-weight:500;">Administrator</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  if (!localStorage.getItem("login")) window.location.href = "index.html";
+  function logout() {
+    localStorage.removeItem("login");
+    window.location.href = "index.html";
+  }
+</script>
+</body>
+</html>

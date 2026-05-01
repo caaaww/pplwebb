@@ -1,29 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <title>HydroSense Login</title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NilaBot - Login</title>
   <link rel="stylesheet" href="style.css">
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
-
 <body>
-
-<div class="login-box">
-
-  <h1>HydroSense</h1>
-  <p>IoT Monitoring System</p>
-
-  <input type="text" id="username" placeholder="Username">
-  <input type="password" id="password" placeholder="Password">
-
-  <button onclick="login()">Login</button>
-
+<div class="login-wrapper">
+  <div class="login-container">
+    <h1>🐟 NilaBot</h1>
+    <p>Smart Fish Monitoring System</p>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button class="btn-primary" onclick="doLogin()">Masuk</button>
+    <div class="login-error" id="loginError">Username atau password salah</div>
+  </div>
 </div>
-
 <script src="supabase.js"></script>
-<script src="login.js"></script>
+<script>
+if (localStorage.getItem("login")) window.location.href = "dashboard.html";
 
+async function doLogin() {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const errEl = document.getElementById("loginError");
+  errEl.style.display = "none";
+
+  const { data } = await supabaseClient
+    .from("users").select("*")
+    .eq("username", username).eq("password", password);
+
+  if (data && data.length > 0) {
+    localStorage.setItem("login", "true");
+    localStorage.setItem("username", username);
+    window.location.href = "dashboard.html";
+  } else {
+    errEl.style.display = "block";
+  }
+}
+document.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+</script>
 </body>
 </html>
